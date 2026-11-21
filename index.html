@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Teléfono Virtual de Cumpleaños</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📱</text></svg>">
+  
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Supabase JS Client (Servido localmente sin depender de CDN externo) -->
+  <script src="vendor/supabase.js"></script>
+  
+  <link rel="stylesheet" href="styles.css?v=2.2">
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <!-- Main Mobile Device Chassis Simulation -->
+  <main class="smartphone-case">
+    <!-- Physical Buttons & Hardware Rim -->
+    <div class="phone-rim"></div>
+    
+    <!-- Phone Screen Viewport -->
+    <div class="phone-screen" id="phone-screen">
+      
+      <!-- Top Dynamic Island / Notch & Sensor Array -->
+      <header class="dynamic-island-container">
+        <div class="status-bar-left">
+          <span id="status-clock" class="status-clock">12:00</span>
+        </div>
+        
+        <div class="dynamic-island" id="dynamic-island">
+          <div class="island-camera"></div>
+          <div class="island-sensor"></div>
+          <div class="island-indicator" id="island-call-pill">
+            <i class="fa-solid fa-phone fa-xs"></i>
+            <span id="island-call-timer">00:00</span>
+          </div>
+        </div>
+
+        <div class="status-bar-right">
+          <i class="fa-solid fa-signal fa-xs"></i>
+          <span class="network-type">5G</span>
+          <i class="fa-solid fa-wifi fa-xs"></i>
+          <div class="battery-icon">
+            <div class="battery-fill" style="width: 85%;"></div>
+          </div>
+        </div>
+      </header>
+
+      <!-- SCREEN 1: MODO CUMPLEAÑERO (Main Home View) -->
+      <section class="screen-view active" id="screen-home">
+        <!-- Top Toolbar with discreet Admin Lock button -->
+        <div class="screen-topbar">
+          <div class="topbar-tag">
+            <span class="badge-sparkle">✨ Especial de Hoy</span>
+          </div>
+          <button class="btn-icon-lock" id="btn-open-admin-modal" title="Modo Administrador" aria-label="Acceso Administrador">
+            <i class="fa-solid fa-lock"></i>
+          </button>
+        </div>
+
+        <!-- Hero Birthday Content -->
+        <div class="birthday-hero">
+          <div class="cake-badge-container">
+            <div class="floating-ring ring-outer"></div>
+            <div class="floating-ring ring-inner"></div>
+            <div class="cake-emoji-wrapper">
+              <span class="cake-emoji">🎂</span>
+            </div>
+            <div class="confetti-particles" aria-hidden="true">
+              <span class="c-dot p1"></span>
+              <span class="c-dot p2"></span>
+              <span class="c-dot p3"></span>
+              <span class="c-dot p4"></span>
+              <span class="c-dot p5"></span>
+            </div>
+          </div>
+
+          <h1 class="hero-title" id="home-greeting-title">¡Feliz Cumpleaños!</h1>
+          <p class="hero-subtitle" id="home-greeting-subtitle">Tus amigos y familiares tienen mensajes de voz inolvidables para ti.</p>
+        </div>
+
+        <!-- Primary Action Buttons -->
+        <div class="home-actions">
+          <button class="btn-primary-action btn-random-call" id="btn-random-call">
+            <div class="btn-icon-bubble">
+              <i class="fa-solid fa-shuffle"></i>
+            </div>
+            <div class="btn-text-group">
+              <span class="btn-main-label">Llamada aleatoria</span>
+              <span class="btn-sub-label">¿Quién te felicitará ahora?</span>
+            </div>
+            <i class="fa-solid fa-arrow-right btn-chevron"></i>
+          </button>
+
+          <button class="btn-secondary-action btn-contacts-list" id="btn-open-contacts">
+            <div class="btn-icon-bubble">
+              <i class="fa-solid fa-address-book"></i>
+            </div>
+            <div class="btn-text-group">
+              <span class="btn-main-label">Contactos</span>
+              <span class="btn-sub-label" id="contacts-counter-label">Cargando felicitaciones...</span>
+            </div>
+            <i class="fa-solid fa-chevron-right btn-chevron"></i>
+          </button>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: LISTA DE CONTACTOS -->
+      <section class="screen-view" id="screen-contacts">
+        <div class="view-header">
+          <button class="btn-back" id="btn-back-from-contacts" aria-label="Volver">
+            <i class="fa-solid fa-chevron-left"></i>
+            <span>Atrás</span>
+          </button>
+          <h2 class="view-title">Agenda de Cumpleaños</h2>
+          <div class="header-action-placeholder"></div>
+        </div>
+
+        <div class="contacts-search-box">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="contacts-search-input" placeholder="Buscar felicitación..." autocomplete="off">
+        </div>
+
+        <div class="contacts-scroll-area" id="contacts-list-container">
+          <!-- Dynamically populated contacts -->
+          <div class="loading-contacts">
+            <div class="mini-spinner"></div>
+            <p>Buscando llamadas disponibles...</p>
+          </div>
+        </div>
+
+        <div class="contacts-footer-tip">
+          <i class="fa-regular fa-lightbulb"></i>
+          <span>Toca cualquier contacto para recibir su llamada entrante.</span>
+        </div>
+      </section>
+
+      <!-- SCREEN 3: LLAMADA ENTRANTE (Incoming Call Simulation) -->
+      <section class="screen-view" id="screen-incoming-call">
+        <!-- Caller dynamic background blur -->
+        <div class="caller-bg-ambient" id="incoming-ambient-bg"></div>
+
+        <div class="incoming-header">
+          <div class="incoming-tag">
+            <span class="pulse-ring-indicator"></span>
+            <span>Teléfono Virtual</span>
+          </div>
+          <h2 class="caller-name" id="incoming-caller-name">Nombre del Contacto</h2>
+          <p class="call-type-label" id="incoming-status-label">Llamada entrante...</p>
+        </div>
+
+        <!-- Caller Avatar Centerpiece with Animated Pulse Rings -->
+        <div class="incoming-avatar-stage">
+          <div class="avatar-ripple-ring ring-1"></div>
+          <div class="avatar-ripple-ring ring-2"></div>
+          <div class="avatar-ripple-ring ring-3"></div>
+          <div class="caller-photo-frame">
+            <img id="incoming-caller-photo" src="" alt="Foto de llamada entrante" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23252a38%22/><text x=%2250%22 y=%2258%22 font-size=%2238%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22>👤</text></svg>'">
+          </div>
+          <div class="sound-wave-incoming" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <!-- Ringing indicator caption -->
+        <div class="ringtone-status-note">
+          <i class="fa-solid fa-volume-high"></i>
+          <span>Tono sintético Web Audio sonando</span>
+        </div>
+
+        <!-- Call Answer/Decline Actions -->
+        <div class="incoming-actions-container">
+          <!-- Decline Button (Red) -->
+          <div class="action-btn-wrapper">
+            <button class="call-btn btn-decline" id="btn-decline-call" aria-label="Rechazar llamada">
+              <i class="fa-solid fa-phone-slash"></i>
+            </button>
+            <span class="call-btn-label">Rechazar</span>
+          </div>
+
+          <!-- Answer Button (Green Animated Pulse) -->
+          <div class="action-btn-wrapper">
+            <button class="call-btn btn-answer" id="btn-answer-call" aria-label="Contestar llamada">
+              <i class="fa-solid fa-phone"></i>
+            </button>
+            <span class="call-btn-label">Contestar</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: EN LLAMADA (Active Call Screen) -->
+      <section class="screen-view" id="screen-active-call">
+        <div class="caller-bg-ambient" id="active-ambient-bg"></div>
+
+        <div class="active-call-header">
+          <div class="active-badge">
+            <span class="active-dot"></span>
+            <span>En llamada</span>
+          </div>
+          <h2 class="caller-name" id="active-caller-name">Nombre Contacto</h2>
+          <div class="active-timer" id="active-call-timer">00:00</div>
+        </div>
+
+        <!-- Active Call Visualizer -->
+        <div class="active-avatar-stage">
+          <div class="active-photo-frame">
+            <img id="active-caller-photo" src="" alt="Foto en llamada" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23252a38%22/><text x=%2250%22 y=%2258%22 font-size=%2238%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22>👤</text></svg>'">
+          </div>
+
+          <!-- Audio Waveform Visualizer -->
+          <div class="audio-equalizer" id="audio-equalizer">
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+          </div>
+
+          <p class="audio-playing-status" id="audio-playing-status">
+            <i class="fa-solid fa-music"></i>
+            <span>Reproduciendo felicitación...</span>
+          </p>
+        </div>
+
+        <!-- Realistic phone mockup keypad controls -->
+        <div class="active-call-grid-controls">
+          <div class="control-item active" id="ctrl-mute">
+            <button class="btn-phone-ctrl" title="Silenciar micrófono">
+              <i class="fa-solid fa-microphone-slash"></i>
+            </button>
+            <span>Silencio</span>
+          </div>
+          <div class="control-item" id="ctrl-speaker">
+            <button class="btn-phone-ctrl active" title="Altavoz">
+              <i class="fa-solid fa-volume-high"></i>
+            </button>
+            <span>Altavoz</span>
+          </div>
+          <div class="control-item" id="ctrl-keypad">
+            <button class="btn-phone-ctrl" title="Teclado numérico">
+              <i class="fa-solid fa-table-cells"></i>
+            </button>
+            <span>Teclado</span>
+          </div>
+        </div>
+
+        <!-- Hang Up Action Button -->
+        <div class="active-call-footer">
+          <div class="action-btn-wrapper">
+            <button class="call-btn btn-hangup" id="btn-hangup-call" aria-label="Colgar llamada">
+              <i class="fa-solid fa-phone-slash"></i>
+            </button>
+            <span class="call-btn-label">Colgar</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 5: PANEL ADMINISTRADOR -->
+      <section class="screen-view" id="screen-admin-panel">
+        <div class="view-header admin-header">
+          <button class="btn-back" id="btn-exit-admin" aria-label="Volver al modo cumpleañero">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Inicio</span>
+          </button>
+          <div class="admin-title-group">
+            <h2 class="view-title">Administración</h2>
+            <span class="admin-badge" id="admin-user-email">Sesión activa</span>
+          </div>
+          <button class="btn-admin-logout" id="btn-admin-logout" title="Cerrar sesión">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+
+        <div class="admin-scroll-content">
+          <!-- Add Contact Card -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <div class="card-icon-tag"><i class="fa-solid fa-user-plus"></i></div>
+              <h3>Añadir Nuevo Contacto</h3>
+            </div>
+            
+            <form id="form-add-contact" class="admin-form">
+              <!-- Contact Name -->
+              <div class="form-group">
+                <label for="input-contact-name">Nombre de quien felicita <span class="req">*</span></label>
+                <div class="input-with-icon">
+                  <i class="fa-regular fa-user"></i>
+                  <input type="text" id="input-contact-name" placeholder="Ej: Papá, Tía Carmen, Juan..." required>
+                </div>
+              </div>
+
+              <!-- Photo Upload -->
+              <div class="form-group">
+                <label>Foto del contacto (Imagen) <span class="req">*</span></label>
+                <div class="file-upload-dropzone" id="dropzone-photo">
+                  <input type="file" id="input-contact-photo" accept="image/png, image/jpeg, image/jpg, image/webp" class="file-hidden-input" required>
+                  <div class="dropzone-empty" id="dropzone-photo-empty">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>Toca para seleccionar foto</span>
+                    <small>PNG, JPG, WEBP</small>
+                  </div>
+                  <div class="dropzone-preview hidden" id="dropzone-photo-preview">
+                    <img id="preview-photo-img" src="" alt="Vista previa">
+                    <button type="button" class="btn-remove-file" id="btn-remove-photo">✕</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Audio Upload -->
+              <div class="form-group">
+                <label>Audio de felicitación <span class="req">*</span></label>
+                <div class="file-upload-dropzone" id="dropzone-audio">
+                  <input type="file" id="input-contact-audio" accept="audio/mp3, audio/mpeg, audio/wav, audio/ogg, audio/m4a, audio/x-m4a, .mp3, .m4a, .ogg, .wav" class="file-hidden-input" required>
+                  <div class="dropzone-empty" id="dropzone-audio-empty">
+                    <i class="fa-solid fa-microphone-lines"></i>
+                    <span>Toca para seleccionar audio</span>
+                    <small>.mp3, .m4a, .ogg, .wav</small>
+                  </div>
+                  <div class="dropzone-preview hidden" id="dropzone-audio-preview">
+                    <div class="audio-file-info">
+                      <i class="fa-solid fa-file-audio"></i>
+                      <span id="preview-audio-name">archivo.mp3</span>
+                    </div>
+                    <audio id="preview-audio-player" controls preload="metadata"></audio>
+                    <button type="button" class="btn-remove-file" id="btn-remove-audio">✕</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Progress Bar (shown during upload) -->
+              <div class="upload-progress-container hidden" id="upload-progress-box">
+                <div class="progress-bar-track">
+                  <div class="progress-bar-fill" id="upload-progress-fill"></div>
+                </div>
+                <span class="progress-text" id="upload-progress-text">Subiendo archivos a Supabase...</span>
+              </div>
+
+              <!-- Submit Button -->
+              <button type="submit" class="btn-admin-submit" id="btn-save-contact">
+                <i class="fa-solid fa-floppy-disk"></i>
+                <span>Guardar Contacto en Supabase</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- Existing Contacts Admin List -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <div class="card-icon-tag"><i class="fa-solid fa-users"></i></div>
+              <h3>Contactos Registrados</h3>
+              <span class="counter-badge" id="admin-contacts-count">0</span>
+            </div>
+
+            <div class="admin-contacts-list" id="admin-contacts-list">
+              <!-- Dynamically populated contacts with delete button -->
+              <div class="loading-contacts">
+                <div class="mini-spinner"></div>
+                <p>Cargando lista de contactos...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Custom Welcome Greeting Card -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <div class="card-icon-tag" style="background: var(--accent-birthday);"><i class="fa-solid fa-cake-candles"></i></div>
+              <h3>Mensaje de Bienvenida</h3>
+            </div>
+            <form id="form-update-greeting" class="admin-form">
+              <p class="admin-card-desc">Personaliza el título y mensaje que ve el cumpleañero al abrir la app.</p>
+              <div class="form-group">
+                <label for="input-greeting-title">Título Principal <span class="req">*</span></label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-heading"></i>
+                  <input type="text" id="input-greeting-title" placeholder="Ej: ¡Feliz Cumpleaños, Elena!" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="input-greeting-subtitle">Mensaje / Subtítulo</label>
+                <div class="input-with-icon">
+                  <i class="fa-regular fa-comment-dots"></i>
+                  <input type="text" id="input-greeting-subtitle" placeholder="Ej: Tus amigos y familiares tienen mensajes para ti.">
+                </div>
+              </div>
+              <button type="submit" class="btn-admin-submit" id="btn-save-greeting" style="background: var(--accent-birthday);">
+                <i class="fa-solid fa-floppy-disk"></i>
+                <span>Guardar Mensaje de Bienvenida</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- Account & Security / Update Password Card -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <div class="card-icon-tag"><i class="fa-solid fa-key"></i></div>
+              <h3>Establecer o Cambiar Contraseña</h3>
+            </div>
+            <form id="form-update-password" class="admin-form">
+              <p class="admin-card-desc">Asigna la contraseña con la que iniciarás sesión en el candado 🔒.</p>
+              <div class="form-group">
+                <label for="input-new-password">Nueva Contraseña <span class="req">*</span></label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-lock"></i>
+                  <input type="password" id="input-new-password" placeholder="Mínimo 6 caracteres" minlength="6" required autocomplete="new-password">
+                  <button type="button" class="btn-toggle-pwd" id="btn-toggle-new-pwd" title="Mostrar contraseña">
+                    <i class="fa-regular fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+              <button type="submit" class="btn-admin-submit btn-update-pwd" id="btn-save-new-password">
+                <i class="fa-solid fa-shield-check"></i>
+                <span>Guardar Nueva Contraseña</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- Supabase Tips & Configuration Guidance -->
+          <div class="admin-info-box">
+            <h4><i class="fa-solid fa-circle-info"></i> Notas de Supabase</h4>
+            <p>Los archivos se suben al bucket público <code>multimedia</code>, los contactos a la tabla <code>contactos</code> y la configuración del mensaje a la tabla <code>configuracion</code>.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bottom Home Indicator Bar (iOS Style) -->
+      <footer class="home-indicator-bar" aria-hidden="true">
+        <div class="home-indicator-pill"></div>
+      </footer>
+
+    </div> <!-- End phone-screen -->
+  </main> <!-- End smartphone-case -->
+
+  <!-- MODAL: LOGIN DE ADMINISTRADOR (Solo Acceso) -->
+  <div class="modal-backdrop hidden" id="modal-admin-login">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-icon-circle">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h3 class="modal-title">Acceso de Administrador</h3>
+        <p class="modal-subtitle">Introduce tus credenciales para acceder a la gestión de contactos.</p>
+      </div>
+
+      <form id="form-admin-login" class="modal-form">
+        <div class="form-group">
+          <label for="login-email">Correo Electrónico</label>
+          <div class="input-with-icon">
+            <i class="fa-regular fa-envelope"></i>
+            <input type="email" id="login-email" placeholder="admin@ejemplo.com" required autocomplete="username">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="login-password">Contraseña</label>
+          <div class="input-with-icon">
+            <i class="fa-solid fa-key"></i>
+            <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+            <button type="button" class="btn-toggle-pwd" id="btn-toggle-password" title="Mostrar contraseña">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-error-banner hidden" id="login-error-banner">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span id="login-error-text">Credenciales incorrectas.</span>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-modal-cancel" id="btn-cancel-login">Cancelar</button>
+          <button type="submit" class="btn-modal-login" id="btn-submit-login">
+            <span class="btn-text">Iniciar Sesión</span>
+            <div class="btn-spinner hidden"></div>
+          </button>
+        </div>
+
+        <div class="modal-links" id="login-recovery-link-container">
+          <button type="button" class="btn-text-link" id="btn-send-magic-link">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span>¿Olvidaste la contraseña? Enviar enlace al correo</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ESTABLECER NUEVA CONTRASEÑA (Por enlace de recuperación) -->
+  <div class="modal-backdrop hidden" id="modal-set-new-password">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-icon-circle" style="color: var(--call-green); background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3);">
+          <i class="fa-solid fa-key"></i>
+        </div>
+        <h3 class="modal-title">Establece tu Contraseña</h3>
+        <p class="modal-subtitle">Has entrado con un enlace de recuperación. Escribe tu nueva contraseña para no tener que usar enlaces en el futuro.</p>
+      </div>
+
+      <form id="form-modal-new-password" class="modal-form">
+        <div class="form-group">
+          <label for="modal-input-new-pwd">Nueva Contraseña</label>
+          <div class="input-with-icon">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="modal-input-new-pwd" placeholder="Mínimo 6 caracteres" minlength="6" required autocomplete="new-password">
+            <button type="button" class="btn-toggle-pwd" id="btn-toggle-modal-new-pwd" title="Mostrar contraseña">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-modal-cancel" id="btn-skip-modal-new-pwd">Más tarde</button>
+          <button type="submit" class="btn-modal-login" id="btn-submit-modal-new-pwd">
+            <span class="btn-text">Guardar Contraseña</span>
+            <div class="btn-spinner hidden"></div>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Hidden HTML5 Audio Element for Contact Voice Messages -->
+  <audio id="contact-audio-element" preload="auto" class="hidden"></audio>
+
+  <!-- Main Application Script -->
+  <script src="app.js?v=2.2"></script>
+</body>
+</html>
